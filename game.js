@@ -352,6 +352,9 @@ class Game {
     }
 
     startGame() {
+        // Switch to game state first
+        this.state = 'game';
+        
         // Initialize game objects with current settings
         const numSnakes = parseInt(this.snakeSlider.value);
         const numFood = parseInt(this.foodSlider.value);
@@ -366,11 +369,10 @@ class Game {
         this.zoom = 1.0;
         
         // Hide menu and show in-game controls
-        this.menuContainer.style.display = 'none';
-        this.controls.style.display = this.showSettings ? 'block' : 'none';
-        
-        // Switch to game state
-        this.state = 'game';
+        requestAnimationFrame(() => {
+            this.menuContainer.style.display = 'none';
+            this.controls.style.display = this.showSettings ? 'block' : 'none';
+        });
     }
 
     handleKeyDown(e) {
