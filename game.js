@@ -248,12 +248,40 @@ class Snake {
 
 class Game {
     constructor() {
+        console.log("Initializing game...");
+        
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.resizeCanvas();
-        window.addEventListener('resize', () => this.resizeCanvas());
+        
+        // Initialize UI elements
+        this.initializeUI();
+        
+        // Game state
+        this.state = 'menu';
+        this.showSettings = true;
+        this.cameraPosition = new Vector2(BOARD_WIDTH / 2, BOARD_HEIGHT / 2);
+        this.zoom = 1.0;
+        this.panning = false;
+        this.lastMousePos = null;
 
-        // UI Elements
+        // Game objects
+        this.snakes = [];
+        this.foods = [];
+
+        // Set up event listeners
+        this.setupEventListeners();
+        
+        // Start game loop
+        this.lastTime = performance.now();
+        this.gameLoop();
+        
+        console.log("Game initialized");
+    }
+
+    initializeUI() {
+        console.log("Initializing UI elements...");
+        
+        // Get UI elements
         this.menuContainer = document.getElementById('menuContainer');
         this.controls = document.getElementById('controls');
         this.startButton = document.getElementById('startButton');
@@ -278,115 +306,101 @@ class Game {
         this.speedValue2 = document.getElementById('speedValue2');
         this.foodValue2 = document.getElementById('foodValue2');
 
-        // Touch state
-        this.touchStartDistance = 0;
-        this.touchStartZoom = 1;
-        this.lastTouchPos = null;
+        // Initialize values
+        this.updateValue(this.speedSlider, this.speedValue);
+        this.updateValue(this.foodSlider, this.foodValue);
+        this.updateValue(this.snakeSlider, this.snakeValue, true);
 
-        // Sync menu and in-game controls
+        // Set initial UI state
+        this.menuContainer.style.display = 'block';
+        this.controls.style.display = 'none';
+        this.floatingControls.style.display = 'none';
+        
+        console.log("UI elements initialized");
+    }
+
+    updateValue(slider, display, isSnakeCount = false) {
+        const value = isSnakeCount ? Math.round(slider.value) : slider.value;
+        display.textContent = value;
+        if (isSnakeCount) {
+            slider.value = value;
+        }
+        console.log(`Updated ${slider.id} to ${value}`);
+    }
+
+    setupEventListeners() {
+        console.log("Setting up event listeners...");
+
+        // Slider event listeners
         this.speedSlider.addEventListener('input', () => {
-            const value = this.speedSlider.value;
-            this.speedValue.textContent = value;
-            this.speedSlider2.value = value;
-            this.speedValue2.textContent = value;
+            console.log("Speed slider changed");
+            this.updateValue(this.speedSlider, this.speedValue);
+            if (this.speedSlider2) {
+                this.speedSlider2.value = this.speedSlider.value;
+                this.speedValue2.textContent = this.speedSlider.value;
+            }
         });
+
         this.foodSlider.addEventListener('input', () => {
-            const value = this.foodSlider.value;
-            this.foodValue.textContent = value;
-            this.foodSlider2.value = value;
-            this.foodValue2.textContent = value;
+            console.log("Food slider changed");
+            this.updateValue(this.foodSlider, this.foodValue);
+            if (this.foodSlider2) {
+                this.foodSlider2.value = this.foodSlider.value;
+                this.foodValue2.textContent = this.foodSlider.value;
+            }
         });
+
         this.snakeSlider.addEventListener('input', () => {
-            const value = Math.round(this.snakeSlider.value);
-            this.snakeValue.textContent = value;
-            this.snakeSlider.value = value;
-        });
-        
-        // Sync in-game controls back to menu
-        this.speedSlider2.addEventListener('input', () => {
-            const value = this.speedSlider2.value;
-            this.speedValue2.textContent = value;
-            this.speedSlider.value = value;
-            this.speedValue.textContent = value;
-        });
-        this.foodSlider2.addEventListener('input', () => {
-            const value = this.foodSlider2.value;
-            this.foodValue2.textContent = value;
-            this.foodSlider.value = value;
-            this.foodValue.textContent = value;
-        });
-        
-        // Sync checkboxes
-        this.deathCheckbox.addEventListener('change', () => {
-            this.deathCheckbox2.checked = this.deathCheckbox.checked;
-        });
-        this.deathCheckbox2.addEventListener('change', () => {
-            this.deathCheckbox.checked = this.deathCheckbox2.checked;
+            console.log("Snake slider changed");
+            this.updateValue(this.snakeSlider, this.snakeValue, true);
         });
 
-        // Game state
-        this.state = 'menu';
-        this.showSettings = true;
-        this.cameraPosition = new Vector2(BOARD_WIDTH / 2, BOARD_HEIGHT / 2);
-        this.zoom = 1.0;
-        this.panning = false;
-        this.lastMousePos = null;
-
-        // Game objects
-        this.snakes = [];
-        this.foods = [];
-
-        // Input handling
-        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-        this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
-        this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
-        
-        // Touch event handling
-        this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
-        this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
-        this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e));
-        
-        // Settings button
-        this.hideSettingsBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.toggleSettings();
-        });
-        this.hideSettingsBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.toggleSettings();
-        });
-        
         // Start button
-        this.startButton.addEventListener('click', () => {
+        this.startButton.addEventListener('click', (e) => {
+            console.log("Start button clicked");
+            e.preventDefault();
             if (this.state === 'menu') {
                 this.startGame();
             }
         });
 
-        // Initialize UI state
-        this.menuContainer.style.display = 'block';
-        this.controls.style.display = 'none';
-        this.floatingControls.style.display = 'none';
+        // Settings button
+        this.hideSettingsBtn.addEventListener('click', (e) => {
+            console.log("Settings button clicked");
+            e.preventDefault();
+            this.toggleSettings();
+        });
 
-        // Initialize slider values
-        this.speedValue.textContent = this.speedSlider.value;
-        this.foodValue.textContent = this.foodSlider.value;
-        this.snakeValue.textContent = Math.round(this.snakeSlider.value);
+        // Canvas event listeners
+        this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+        this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+        this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+        this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+        this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+        this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e));
 
-        // Start game loop
-        this.lastTime = performance.now();
-        this.gameLoop();
+        // Keyboard events
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        
+        // Handle window resize
+        window.addEventListener('resize', () => this.resizeCanvas());
+        this.resizeCanvas();
+        
+        console.log("Event listeners set up");
     }
 
     startGame() {
-        // Switch to game state first
+        console.log("Starting game...");
+        
+        // Switch to game state
         this.state = 'game';
         
-        // Initialize game objects with current settings
+        // Initialize game objects
         const numSnakes = Math.round(parseInt(this.snakeSlider.value));
         const numFood = parseInt(this.foodSlider.value);
+        
+        console.log(`Creating ${numSnakes} snakes and ${numFood} food items`);
         
         this.snakes = Array(numSnakes).fill(null).map(() => new Snake());
         this.foods = Array(numFood).fill(null).map(() => new Food());
@@ -397,19 +411,104 @@ class Game {
         this.cameraPosition = new Vector2(BOARD_WIDTH / 2, BOARD_HEIGHT / 2);
         this.zoom = 1.0;
         
-        // Hide menu and show in-game controls
+        // Update UI
         requestAnimationFrame(() => {
             this.menuContainer.style.display = 'none';
             this.controls.style.display = this.showSettings ? 'block' : 'none';
             this.floatingControls.style.display = 'block';
         });
+        
+        console.log("Game started");
     }
 
     toggleSettings() {
         if (this.state === 'game') {
             this.showSettings = !this.showSettings;
             this.controls.style.display = this.showSettings ? 'block' : 'none';
+            console.log(`Settings visibility toggled: ${this.showSettings}`);
         }
+    }
+
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        console.log(`Canvas resized to ${this.canvas.width}x${this.canvas.height}`);
+    }
+
+    handleMouseDown(e) {
+        this.panning = true;
+        this.lastMousePos = new Vector2(e.clientX, e.clientY);
+    }
+
+    handleMouseUp() {
+        this.panning = false;
+        this.lastMousePos = null;
+    }
+
+    handleMouseMove(e) {
+        if (this.panning && this.lastMousePos) {
+            const currentPos = new Vector2(e.clientX, e.clientY);
+            const delta = currentPos.subtract(this.lastMousePos);
+            
+            this.cameraPosition = this.cameraPosition.subtract(
+                delta.multiply(1 / this.zoom)
+            );
+            
+            this.lastMousePos = currentPos;
+        }
+    }
+
+    handleWheel(e) {
+        const zoomSpeed = 0.001;
+        this.zoom = Math.min(Math.max(0.1, this.zoom * (1 - e.deltaY * zoomSpeed)), 5.0);
+    }
+
+    handleTouchStart(e) {
+        e.preventDefault();
+        if (e.touches.length === 2) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            this.touchStartDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            this.touchStartZoom = this.zoom;
+        } else if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            this.lastTouchPos = new Vector2(touch.clientX, touch.clientY);
+        }
+    }
+
+    handleTouchMove(e) {
+        e.preventDefault();
+        if (e.touches.length === 2) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const currentDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            
+            const scale = currentDistance / this.touchStartDistance;
+            this.zoom = Math.min(Math.max(this.touchStartZoom * scale, 0.1), 5.0);
+            
+        } else if (e.touches.length === 1 && this.lastTouchPos) {
+            const touch = e.touches[0];
+            const currentPos = new Vector2(touch.clientX, touch.clientY);
+            const delta = currentPos.subtract(this.lastTouchPos);
+            
+            this.cameraPosition = this.cameraPosition.subtract(
+                delta.multiply(1 / this.zoom)
+            );
+            
+            this.lastTouchPos = currentPos;
+        }
+    }
+
+    handleTouchEnd(e) {
+        e.preventDefault();
+        this.lastTouchPos = null;
+        this.touchStartDistance = 0;
     }
 
     handleKeyDown(e) {
@@ -417,7 +516,7 @@ class Game {
             this.toggleSettings();
         } else if (e.key === 'Escape') {
             if (this.state === 'game') {
-                // Return to menu
+                console.log("Returning to menu");
                 this.state = 'menu';
                 this.menuContainer.style.display = 'block';
                 this.controls.style.display = 'none';
@@ -426,39 +525,6 @@ class Game {
                 this.foods = [];
             }
         }
-    }
-
-    handleMouseDown(e) {
-        if (this.state === 'game') {
-            this.panning = true;
-            this.lastMousePos = new Vector2(e.clientX, e.clientY);
-        }
-    }
-
-    handleMouseUp(e) {
-        this.panning = false;
-    }
-
-    handleMouseMove(e) {
-        if (this.panning && this.lastMousePos) {
-            const mouseNow = new Vector2(e.clientX, e.clientY);
-            const delta = mouseNow.subtract(this.lastMousePos);
-            this.cameraPosition = this.cameraPosition.subtract(delta.multiply(1 / this.zoom));
-            this.lastMousePos = mouseNow;
-        }
-    }
-
-    handleWheel(e) {
-        const oldZoom = this.zoom;
-        this.zoom *= Math.pow(1.1, -Math.sign(e.deltaY));
-        
-        const mousePos = new Vector2(e.clientX, e.clientY);
-        const screenCenter = new Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-        
-        const worldBefore = mousePos.subtract(screenCenter).multiply(1 / oldZoom).add(this.cameraPosition);
-        const worldAfter = mousePos.subtract(screenCenter).multiply(1 / this.zoom).add(this.cameraPosition);
-        
-        this.cameraPosition = this.cameraPosition.add(worldBefore.subtract(worldAfter));
     }
 
     update(dt) {
@@ -511,19 +577,19 @@ class Game {
         }
     }
 
-    gameLoop() {
-        const currentTime = performance.now();
-        const dt = currentTime - this.lastTime;
+    gameLoop(currentTime) {
+        const deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
 
-        this.update(dt);
+        this.update(deltaTime);
         this.draw();
 
-        requestAnimationFrame(() => this.gameLoop());
+        requestAnimationFrame((time) => this.gameLoop(time));
     }
 }
 
 // Start the game when the page loads
 window.addEventListener('load', () => {
-    new Game();
+    console.log("Page loaded, creating game instance");
+    window.game = new Game();
 });
