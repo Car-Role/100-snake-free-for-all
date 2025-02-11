@@ -257,6 +257,7 @@ class Game {
         this.menuContainer = document.getElementById('menuContainer');
         this.controls = document.getElementById('controls');
         this.startButton = document.getElementById('startButton');
+        this.hideSettingsBtn = document.getElementById('hideSettingsBtn');
         
         // Menu controls
         this.speedSlider = document.getElementById('speedSlider');
@@ -275,6 +276,11 @@ class Game {
         this.snakeValue = document.getElementById('snakeValue');
         this.speedValue2 = document.getElementById('speedValue2');
         this.foodValue2 = document.getElementById('foodValue2');
+
+        // Touch state
+        this.touchStartDistance = 0;
+        this.touchStartZoom = 1;
+        this.lastTouchPos = null;
 
         // Sync menu and in-game controls
         this.speedSlider.addEventListener('input', () => {
@@ -334,6 +340,18 @@ class Game {
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
         
+        // Touch event handling
+        this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+        this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+        this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e));
+        
+        // Mobile settings button
+        this.hideSettingsBtn.addEventListener('click', () => this.toggleSettings());
+        this.hideSettingsBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.toggleSettings();
+        });
+        
         // Start button
         this.startButton.addEventListener('click', () => this.startGame());
 
@@ -344,6 +362,13 @@ class Game {
         // Start game loop
         this.lastTime = performance.now();
         this.gameLoop();
+    }
+
+    toggleSettings() {
+        if (this.state === 'game') {
+            this.showSettings = !this.showSettings;
+            this.controls.style.display = this.showSettings ? 'block' : 'none';
+        }
     }
 
     resizeCanvas() {
@@ -375,12 +400,61 @@ class Game {
         });
     }
 
+    handleTouchStart(e) {
+        e.preventDefault();
+        if (e.touches.length === 2) {
+            // Get the distance between two touches for pinch-zoom
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            this.touchStartDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            this.touchStartZoom = this.zoom;
+        } else if (e.touches.length === 1) {
+            // Single touch for panning
+            const touch = e.touches[0];
+            this.lastTouchPos = new Vector2(touch.clientX, touch.clientY);
+        }
+    }
+
+    handleTouchMove(e) {
+        e.preventDefault();
+        if (e.touches.length === 2) {
+            // Handle pinch-zoom
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const currentDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            
+            const scale = currentDistance / this.touchStartDistance;
+            this.zoom = Math.min(Math.max(this.touchStartZoom * scale, 0.1), 5.0);
+            
+        } else if (e.touches.length === 1 && this.lastTouchPos) {
+            // Handle panning
+            const touch = e.touches[0];
+            const currentPos = new Vector2(touch.clientX, touch.clientY);
+            const delta = currentPos.subtract(this.lastTouchPos);
+            
+            this.cameraPosition = this.cameraPosition.subtract(
+                delta.multiply(1 / this.zoom)
+            );
+            
+            this.lastTouchPos = currentPos;
+        }
+    }
+
+    handleTouchEnd(e) {
+        e.preventDefault();
+        this.lastTouchPos = null;
+        this.touchStartDistance = 0;
+    }
+
     handleKeyDown(e) {
         if (e.key === 'h' || e.key === 'H') {
-            if (this.state === 'game') {
-                this.showSettings = !this.showSettings;
-                this.controls.style.display = this.showSettings ? 'block' : 'none';
-            }
+            this.toggleSettings();
         } else if (e.key === 'Escape') {
             if (this.state === 'game') {
                 // Return to menu

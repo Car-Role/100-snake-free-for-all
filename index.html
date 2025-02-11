@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Snake Free For All</title>
     <style>
         body {
@@ -14,14 +14,18 @@
             min-height: 100vh;
             background-color: rgb(50, 50, 50);
             font-family: Arial, sans-serif;
+            touch-action: none; /* Prevent default touch actions */
+            overflow: hidden;
         }
         canvas {
             display: block;
+            touch-action: none;
         }
         #gameContainer {
             position: relative;
             width: 100%;
             height: 100vh;
+            touch-action: none;
         }
         #menuContainer {
             position: absolute;
@@ -35,6 +39,8 @@
             text-align: center;
             min-width: 300px;
             z-index: 1000;
+            max-width: 90vw;
+            box-sizing: border-box;
         }
         #controls {
             position: absolute;
@@ -46,6 +52,8 @@
             border-radius: 10px;
             border: 2px solid rgb(189, 147, 249);
             display: none;
+            max-width: 90vw;
+            box-sizing: border-box;
         }
         .slider-container {
             margin: 15px 0;
@@ -55,6 +63,7 @@
         .slider {
             width: 200px;
             margin: 5px 0;
+            max-width: 100%;
         }
         .checkbox-container {
             margin: 15px 0;
@@ -90,6 +99,35 @@
             margin: 10px 0;
             text-align: left;
         }
+        #mobileControls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        #hideSettingsBtn {
+            background-color: rgb(98, 114, 164);
+            color: rgb(248, 248, 242);
+            border: 2px solid rgb(189, 147, 249);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        @media (hover: none) and (pointer: coarse) {
+            #mobileControls {
+                display: block;
+            }
+            .instructions {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -116,9 +154,9 @@
             <button id="startButton">Start Game</button>
             <div class="instructions">
                 <strong>Controls:</strong><br>
-                • Click and drag to pan<br>
-                • Mouse wheel to zoom<br>
-                • Press H to toggle settings
+                • Desktop: Click and drag to pan, mouse wheel to zoom<br>
+                • Mobile: Drag to pan, pinch to zoom<br>
+                • Press H key or tap ⚙️ to toggle settings
             </div>
         </div>
         <div id="controls">
@@ -134,9 +172,12 @@
                 <input type="checkbox" id="deathCheckbox2" checked>
                 <label for="deathCheckbox2">Snake Death</label>
             </div>
-            <div class="instructions">Press H to hide settings</div>
+            <div class="instructions">Press H or tap ⚙️ to hide settings</div>
+        </div>
+        <div id="mobileControls">
+            <button id="hideSettingsBtn">⚙️</button>
         </div>
     </div>
-    <script src="game.js"></script>
+    <script src="game.js?v=1"></script>
 </body>
 </html>
