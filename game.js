@@ -258,6 +258,7 @@ class Game {
         this.controls = document.getElementById('controls');
         this.startButton = document.getElementById('startButton');
         this.hideSettingsBtn = document.getElementById('hideSettingsBtn');
+        this.floatingControls = document.getElementById('floatingControls');
         
         // Menu controls
         this.speedSlider = document.getElementById('speedSlider');
@@ -345,8 +346,11 @@ class Game {
         this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
         this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e));
         
-        // Mobile settings button
-        this.hideSettingsBtn.addEventListener('click', () => this.toggleSettings());
+        // Settings button
+        this.hideSettingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.toggleSettings();
+        });
         this.hideSettingsBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             this.toggleSettings();
@@ -358,22 +362,11 @@ class Game {
         // Initialize UI state
         this.menuContainer.style.display = 'block';
         this.controls.style.display = 'none';
+        this.floatingControls.style.display = 'none';
 
         // Start game loop
         this.lastTime = performance.now();
         this.gameLoop();
-    }
-
-    toggleSettings() {
-        if (this.state === 'game') {
-            this.showSettings = !this.showSettings;
-            this.controls.style.display = this.showSettings ? 'block' : 'none';
-        }
-    }
-
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
     }
 
     startGame() {
@@ -397,59 +390,15 @@ class Game {
         requestAnimationFrame(() => {
             this.menuContainer.style.display = 'none';
             this.controls.style.display = this.showSettings ? 'block' : 'none';
+            this.floatingControls.style.display = 'block';
         });
     }
 
-    handleTouchStart(e) {
-        e.preventDefault();
-        if (e.touches.length === 2) {
-            // Get the distance between two touches for pinch-zoom
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            this.touchStartDistance = Math.hypot(
-                touch2.clientX - touch1.clientX,
-                touch2.clientY - touch1.clientY
-            );
-            this.touchStartZoom = this.zoom;
-        } else if (e.touches.length === 1) {
-            // Single touch for panning
-            const touch = e.touches[0];
-            this.lastTouchPos = new Vector2(touch.clientX, touch.clientY);
+    toggleSettings() {
+        if (this.state === 'game') {
+            this.showSettings = !this.showSettings;
+            this.controls.style.display = this.showSettings ? 'block' : 'none';
         }
-    }
-
-    handleTouchMove(e) {
-        e.preventDefault();
-        if (e.touches.length === 2) {
-            // Handle pinch-zoom
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            const currentDistance = Math.hypot(
-                touch2.clientX - touch1.clientX,
-                touch2.clientY - touch1.clientY
-            );
-            
-            const scale = currentDistance / this.touchStartDistance;
-            this.zoom = Math.min(Math.max(this.touchStartZoom * scale, 0.1), 5.0);
-            
-        } else if (e.touches.length === 1 && this.lastTouchPos) {
-            // Handle panning
-            const touch = e.touches[0];
-            const currentPos = new Vector2(touch.clientX, touch.clientY);
-            const delta = currentPos.subtract(this.lastTouchPos);
-            
-            this.cameraPosition = this.cameraPosition.subtract(
-                delta.multiply(1 / this.zoom)
-            );
-            
-            this.lastTouchPos = currentPos;
-        }
-    }
-
-    handleTouchEnd(e) {
-        e.preventDefault();
-        this.lastTouchPos = null;
-        this.touchStartDistance = 0;
     }
 
     handleKeyDown(e) {
@@ -461,6 +410,7 @@ class Game {
                 this.state = 'menu';
                 this.menuContainer.style.display = 'block';
                 this.controls.style.display = 'none';
+                this.floatingControls.style.display = 'none';
                 this.snakes = [];
                 this.foods = [];
             }

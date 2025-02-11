@@ -35,12 +35,12 @@
             background-color: rgba(50, 50, 50, 0.95);
             padding: 30px;
             border-radius: 10px;
-            border: 2px solid rgb(189, 147, 249);
             text-align: center;
             min-width: 300px;
             z-index: 1000;
             max-width: 90vw;
             box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         #controls {
             position: absolute;
@@ -50,10 +50,10 @@
             background-color: rgba(50, 50, 50, 0.95);
             padding: 20px;
             border-radius: 10px;
-            border: 2px solid rgb(189, 147, 249);
             display: none;
             max-width: 90vw;
             box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .slider-container {
             margin: 15px 0;
@@ -78,15 +78,18 @@
             font-size: 18px;
             background-color: rgb(98, 114, 164);
             color: rgb(248, 248, 242);
-            border: 2px solid rgb(189, 147, 249);
+            border: none;
             border-radius: 5px;
             cursor: pointer;
             margin: 20px auto 10px;
             display: block;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         #startButton:hover {
             background-color: rgb(108, 124, 174);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         .title {
             color: rgb(248, 248, 242);
@@ -99,17 +102,16 @@
             margin: 10px 0;
             text-align: left;
         }
-        #mobileControls {
+        #floatingControls {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            display: none;
         }
         #hideSettingsBtn {
             background-color: rgb(98, 114, 164);
             color: rgb(248, 248, 242);
-            border: 2px solid rgb(189, 147, 249);
+            border: none;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -119,6 +121,13 @@
             justify-content: center;
             cursor: pointer;
             touch-action: manipulation;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        #hideSettingsBtn:hover {
+            background-color: rgb(108, 124, 174);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         @media (hover: none) and (pointer: coarse) {
             #mobileControls {
@@ -174,10 +183,10 @@
             </div>
             <div class="instructions">Press H or tap ⚙️ to hide settings</div>
         </div>
-        <div id="mobileControls">
-            <button id="hideSettingsBtn">⚙️</button>
+        <div id="floatingControls">
+            <button id="hideSettingsBtn" title="Toggle Settings">⚙️</button>
         </div>
     </div>
-    <script src="game.js?v=1"></script>
+    <script src="game.js?v=2"></script>
 </body>
 </html>
