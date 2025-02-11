@@ -355,6 +355,42 @@ class Game {
             this.updateValue(this.snakeSlider, this.snakeValue, true);
         });
 
+        // In-game control listeners
+        if (this.speedSlider2) {
+            this.speedSlider2.addEventListener('input', () => {
+                console.log("In-game speed slider changed");
+                this.updateValue(this.speedSlider2, this.speedValue2);
+                this.speedSlider.value = this.speedSlider2.value;
+                this.speedValue.textContent = this.speedSlider2.value;
+            });
+        }
+
+        if (this.foodSlider2) {
+            this.foodSlider2.addEventListener('input', () => {
+                console.log("In-game food slider changed");
+                this.updateValue(this.foodSlider2, this.foodValue2);
+                this.foodSlider.value = this.foodSlider2.value;
+                this.foodValue.textContent = this.foodSlider2.value;
+            });
+        }
+
+        // Checkbox sync
+        this.deathCheckbox.addEventListener('change', () => {
+            console.log("Death checkbox changed");
+            if (this.deathCheckbox2) {
+                this.deathCheckbox2.checked = this.deathCheckbox.checked;
+            }
+            Snake.death_enabled = this.deathCheckbox.checked;
+        });
+
+        if (this.deathCheckbox2) {
+            this.deathCheckbox2.addEventListener('change', () => {
+                console.log("In-game death checkbox changed");
+                this.deathCheckbox.checked = this.deathCheckbox2.checked;
+                Snake.death_enabled = this.deathCheckbox2.checked;
+            });
+        }
+
         // Start button
         this.startButton.addEventListener('click', (e) => {
             console.log("Start button clicked");
