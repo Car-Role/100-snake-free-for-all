@@ -76,8 +76,8 @@
         #startButton {
             padding: 12px 24px;
             font-size: 18px;
-            background-color: rgb(98, 114, 164);
-            color: rgb(248, 248, 242);
+            background-color: rgb(80, 250, 123);
+            color: rgb(40, 42, 54);
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -85,9 +85,10 @@
             display: block;
             transition: all 0.2s ease;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
         }
         #startButton:hover {
-            background-color: rgb(108, 124, 174);
+            background-color: rgb(90, 255, 133);
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
@@ -153,8 +154,8 @@
                 <input type="range" id="foodSlider" class="slider" min="5" max="1000" value="50">
             </div>
             <div class="slider-container">
-                <label for="snakeSlider">Snake Count: <span id="snakeValue">100</span></label>
-                <input type="range" id="snakeSlider" class="slider" min="10" max="500" value="100">
+                <label for="snakeSlider">Snake Count: <span id="snakeValue">50</span></label>
+                <input type="range" id="snakeSlider" class="slider" min="10" max="200" value="50">
             </div>
             <div class="checkbox-container">
                 <input type="checkbox" id="deathCheckbox" checked>
@@ -187,6 +188,6 @@
             <button id="hideSettingsBtn" title="Toggle Settings">⚙️</button>
         </div>
     </div>
-    <script src="game.js?v=2"></script>
+    <script src="game.js?v=3"></script>
 </body>
 </html>

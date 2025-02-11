@@ -297,7 +297,9 @@ class Game {
             this.foodValue2.textContent = value;
         });
         this.snakeSlider.addEventListener('input', () => {
-            this.snakeValue.textContent = this.snakeSlider.value;
+            const value = Math.round(this.snakeSlider.value);
+            this.snakeValue.textContent = value;
+            this.snakeSlider.value = value;
         });
         
         // Sync in-game controls back to menu
@@ -357,12 +359,21 @@ class Game {
         });
         
         // Start button
-        this.startButton.addEventListener('click', () => this.startGame());
+        this.startButton.addEventListener('click', () => {
+            if (this.state === 'menu') {
+                this.startGame();
+            }
+        });
 
         // Initialize UI state
         this.menuContainer.style.display = 'block';
         this.controls.style.display = 'none';
         this.floatingControls.style.display = 'none';
+
+        // Initialize slider values
+        this.speedValue.textContent = this.speedSlider.value;
+        this.foodValue.textContent = this.foodSlider.value;
+        this.snakeValue.textContent = Math.round(this.snakeSlider.value);
 
         // Start game loop
         this.lastTime = performance.now();
@@ -374,7 +385,7 @@ class Game {
         this.state = 'game';
         
         // Initialize game objects with current settings
-        const numSnakes = parseInt(this.snakeSlider.value);
+        const numSnakes = Math.round(parseInt(this.snakeSlider.value));
         const numFood = parseInt(this.foodSlider.value);
         
         this.snakes = Array(numSnakes).fill(null).map(() => new Snake());
