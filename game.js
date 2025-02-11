@@ -337,6 +337,10 @@ class Game {
         // Start button
         this.startButton.addEventListener('click', () => this.startGame());
 
+        // Initialize UI state
+        this.menuContainer.style.display = 'block';
+        this.controls.style.display = 'none';
+
         // Start game loop
         this.lastTime = performance.now();
         this.gameLoop();
@@ -363,7 +367,7 @@ class Game {
         
         // Hide menu and show in-game controls
         this.menuContainer.style.display = 'none';
-        this.controls.style.display = 'block';
+        this.controls.style.display = this.showSettings ? 'block' : 'none';
         
         // Switch to game state
         this.state = 'game';
@@ -371,8 +375,19 @@ class Game {
 
     handleKeyDown(e) {
         if (e.key === 'h' || e.key === 'H') {
-            this.showSettings = !this.showSettings;
-            this.controls.style.display = this.showSettings ? 'block' : 'none';
+            if (this.state === 'game') {
+                this.showSettings = !this.showSettings;
+                this.controls.style.display = this.showSettings ? 'block' : 'none';
+            }
+        } else if (e.key === 'Escape') {
+            if (this.state === 'game') {
+                // Return to menu
+                this.state = 'menu';
+                this.menuContainer.style.display = 'block';
+                this.controls.style.display = 'none';
+                this.snakes = [];
+                this.foods = [];
+            }
         }
     }
 
