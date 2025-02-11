@@ -254,27 +254,65 @@ class Game {
         window.addEventListener('resize', () => this.resizeCanvas());
 
         // UI Elements
+        this.menuContainer = document.getElementById('menuContainer');
         this.controls = document.getElementById('controls');
         this.startButton = document.getElementById('startButton');
+        
+        // Menu controls
         this.speedSlider = document.getElementById('speedSlider');
         this.foodSlider = document.getElementById('foodSlider');
         this.snakeSlider = document.getElementById('snakeSlider');
         this.deathCheckbox = document.getElementById('deathCheckbox');
+        
+        // In-game controls
+        this.speedSlider2 = document.getElementById('speedSlider2');
+        this.foodSlider2 = document.getElementById('foodSlider2');
+        this.deathCheckbox2 = document.getElementById('deathCheckbox2');
 
         // Value displays
         this.speedValue = document.getElementById('speedValue');
         this.foodValue = document.getElementById('foodValue');
         this.snakeValue = document.getElementById('snakeValue');
+        this.speedValue2 = document.getElementById('speedValue2');
+        this.foodValue2 = document.getElementById('foodValue2');
 
-        // Update value displays on slider change
+        // Sync menu and in-game controls
         this.speedSlider.addEventListener('input', () => {
-            this.speedValue.textContent = this.speedSlider.value;
+            const value = this.speedSlider.value;
+            this.speedValue.textContent = value;
+            this.speedSlider2.value = value;
+            this.speedValue2.textContent = value;
         });
         this.foodSlider.addEventListener('input', () => {
-            this.foodValue.textContent = this.foodSlider.value;
+            const value = this.foodSlider.value;
+            this.foodValue.textContent = value;
+            this.foodSlider2.value = value;
+            this.foodValue2.textContent = value;
         });
         this.snakeSlider.addEventListener('input', () => {
             this.snakeValue.textContent = this.snakeSlider.value;
+        });
+        
+        // Sync in-game controls back to menu
+        this.speedSlider2.addEventListener('input', () => {
+            const value = this.speedSlider2.value;
+            this.speedValue2.textContent = value;
+            this.speedSlider.value = value;
+            this.speedValue.textContent = value;
+        });
+        this.foodSlider2.addEventListener('input', () => {
+            const value = this.foodSlider2.value;
+            this.foodValue2.textContent = value;
+            this.foodSlider.value = value;
+            this.foodValue.textContent = value;
+        });
+        
+        // Sync checkboxes
+        this.deathCheckbox.addEventListener('change', () => {
+            this.deathCheckbox2.checked = this.deathCheckbox.checked;
+        });
+        this.deathCheckbox2.addEventListener('change', () => {
+            this.deathCheckbox.checked = this.deathCheckbox2.checked;
         });
 
         // Game state
@@ -323,8 +361,8 @@ class Game {
         this.cameraPosition = new Vector2(BOARD_WIDTH / 2, BOARD_HEIGHT / 2);
         this.zoom = 1.0;
         
-        // Hide start button and show controls
-        this.startButton.style.display = 'none';
+        // Hide menu and show in-game controls
+        this.menuContainer.style.display = 'none';
         this.controls.style.display = 'block';
         
         // Switch to game state

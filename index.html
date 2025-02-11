@@ -20,6 +20,20 @@
         }
         #gameContainer {
             position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        #menuContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(50, 50, 50, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid rgb(189, 147, 249);
+            text-align: center;
+            min-width: 300px;
         }
         #controls {
             position: absolute;
@@ -29,38 +43,58 @@
             background-color: rgba(50, 50, 50, 0.8);
             padding: 10px;
             border-radius: 5px;
-            display: none;
+            display: block;
         }
         .slider-container {
-            margin: 10px 0;
+            margin: 15px 0;
+            text-align: left;
+            color: rgb(248, 248, 242);
         }
         .slider {
             width: 200px;
             margin: 5px 0;
         }
         .checkbox-container {
-            margin: 10px 0;
+            margin: 15px 0;
+            color: rgb(248, 248, 242);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         #startButton {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 12px 24px;
+            font-size: 18px;
             background-color: rgb(98, 114, 164);
             color: rgb(248, 248, 242);
             border: 2px solid rgb(189, 147, 249);
             border-radius: 5px;
             cursor: pointer;
-            margin: 20px auto;
+            margin: 20px auto 10px;
             display: block;
+            transition: background-color 0.2s;
         }
         #startButton:hover {
             background-color: rgb(108, 124, 174);
+        }
+        .title {
+            color: rgb(248, 248, 242);
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .instructions {
+            color: rgb(248, 248, 242);
+            font-size: 14px;
+            margin: 10px 0;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
-        <div id="controls">
+        <div id="menuContainer">
+            <div class="title">Snake Free For All</div>
             <div class="slider-container">
                 <label for="speedSlider">Speed (ms): <span id="speedValue">100</span></label>
                 <input type="range" id="speedSlider" class="slider" min="5" max="500" value="100">
@@ -74,14 +108,32 @@
                 <input type="range" id="snakeSlider" class="slider" min="10" max="500" value="100">
             </div>
             <div class="checkbox-container">
-                <label>
-                    <input type="checkbox" id="deathCheckbox" checked>
-                    Snake Death
-                </label>
+                <input type="checkbox" id="deathCheckbox" checked>
+                <label for="deathCheckbox">Snake Death</label>
             </div>
-            <div>Press H to hide settings</div>
+            <button id="startButton">Start Game</button>
+            <div class="instructions">
+                <strong>Controls:</strong><br>
+                • Click and drag to pan<br>
+                • Mouse wheel to zoom<br>
+                • Press H to toggle settings
+            </div>
         </div>
-        <button id="startButton">Start Game</button>
+        <div id="controls">
+            <div class="slider-container">
+                <label for="speedSlider">Speed (ms): <span id="speedValue2">100</span></label>
+                <input type="range" id="speedSlider2" class="slider" min="5" max="500" value="100">
+            </div>
+            <div class="slider-container">
+                <label for="foodSlider">Food Count: <span id="foodValue2">50</span></label>
+                <input type="range" id="foodSlider2" class="slider" min="5" max="1000" value="50">
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="deathCheckbox2" checked>
+                <label for="deathCheckbox2">Snake Death</label>
+            </div>
+            <div class="instructions">Press H to hide settings</div>
+        </div>
     </div>
     <script src="game.js"></script>
 </body>
