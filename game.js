@@ -225,6 +225,16 @@ class Snake {
         this.stunned = true;
         this.stunTimer = STUN_DURATION;
         this.collisionCount++;
+        
+        // Choose a new random direction
+        const possibleDirs = [
+            new Vector2(1, 0),
+            new Vector2(-1, 0),
+            new Vector2(0, 1),
+            new Vector2(0, -1)
+        ];
+        this.direction = possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+        
         if (this.collisionCount >= 3 && Snake.death_enabled) {
             this.alive = false;
         }
