@@ -7,6 +7,7 @@ const DEFAULT_MOVE_INTERVAL = 100;
 const STUN_DURATION = 2000;
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
+const INITIAL_ZOOM = 2.0;
 
 // Colors
 const GREEN = 'rgb(0, 255, 0)';
@@ -104,6 +105,13 @@ class Snake {
             this.moveTimer = gameSpeed;
             this.decideDirection(foods, snakes);
             const newHead = this.position.add(this.direction.multiply(GRID_SIZE));
+
+            // Check if new position is out of bounds
+            if (newHead.x < 0 || newHead.x >= BOARD_WIDTH ||
+                newHead.y < 0 || newHead.y >= BOARD_HEIGHT) {
+                this.handleCollision();
+                return;
+            }
 
             // Check collision with other snakes
             for (const other of snakes) {
@@ -260,7 +268,7 @@ class Game {
         this.state = 'menu';
         this.showSettings = true;
         this.cameraPosition = new Vector2(BOARD_WIDTH / 2, BOARD_HEIGHT / 2);
-        this.zoom = 1.0;
+        this.zoom = INITIAL_ZOOM;
         this.panning = false;
         this.lastMousePos = null;
 
@@ -445,7 +453,7 @@ class Game {
         
         // Reset camera
         this.cameraPosition = new Vector2(BOARD_WIDTH / 2, BOARD_HEIGHT / 2);
-        this.zoom = 1.0;
+        this.zoom = INITIAL_ZOOM;
         
         // Update UI
         requestAnimationFrame(() => {

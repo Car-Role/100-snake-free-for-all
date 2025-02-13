@@ -37,6 +37,7 @@
             border-radius: 10px;
             text-align: center;
             min-width: 300px;
+            width: 400px;
             z-index: 1000;
             max-width: 90vw;
             box-sizing: border-box;
@@ -59,9 +60,20 @@
             margin: 15px 0;
             text-align: left;
             color: rgb(248, 248, 242);
+            width: 100%;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        .slider-value {
+            min-width: 35px;
+            text-align: right;
         }
         .slider {
-            width: 200px;
+            width: 100%;
             margin: 5px 0;
             max-width: 100%;
         }
@@ -144,16 +156,25 @@
         <div id="menuContainer">
             <div class="title">Snake Free For All</div>
             <div class="slider-container">
-                <label for="speedSlider">Speed (ms): <span id="speedValue">100</span></label>
+                <div class="slider-label">
+                    <label for="speedSlider">Speed:</label>
+                    <span id="speedValue" class="slider-value">100</span>
+                </div>
                 <input type="range" id="speedSlider" class="slider" min="5" max="500" value="100">
             </div>
             <div class="slider-container">
-                <label for="foodSlider">Food Count: <span id="foodValue">50</span></label>
-                <input type="range" id="foodSlider" class="slider" min="5" max="1000" value="50">
+                <div class="slider-label">
+                    <label for="foodSlider">Food Count:</label>
+                    <span id="foodValue" class="slider-value">50</span>
+                </div>
+                <input type="range" id="foodSlider" class="slider" min="1" max="2000" value="50">
             </div>
             <div class="slider-container">
-                <label for="snakeSlider">Snake Count: <span id="snakeValue">50</span></label>
-                <input type="range" id="snakeSlider" class="slider" min="10" max="200" value="50" step="1">
+                <div class="slider-label">
+                    <label for="snakeSlider">Snake Count:</label>
+                    <span id="snakeValue" class="slider-value">50</span>
+                </div>
+                <input type="range" id="snakeSlider" class="slider" min="10" max="2000" value="50" step="1">
             </div>
             <div class="checkbox-container">
                 <input type="checkbox" id="deathCheckbox" checked>
@@ -169,12 +190,18 @@
         </div>
         <div id="controls">
             <div class="slider-container">
-                <label for="speedSlider">Speed (ms): <span id="speedValue2">100</span></label>
+                <div class="slider-label">
+                    <label for="speedSlider2">Speed:</label>
+                    <span id="speedValue2" class="slider-value">100</span>
+                </div>
                 <input type="range" id="speedSlider2" class="slider" min="5" max="500" value="100">
             </div>
             <div class="slider-container">
-                <label for="foodSlider">Food Count: <span id="foodValue2">50</span></label>
-                <input type="range" id="foodSlider2" class="slider" min="5" max="1000" value="50">
+                <div class="slider-label">
+                    <label for="foodSlider2">Food Count:</label>
+                    <span id="foodValue2" class="slider-value">50</span>
+                </div>
+                <input type="range" id="foodSlider2" class="slider" min="1" max="2000" value="50">
             </div>
             <div class="checkbox-container">
                 <input type="checkbox" id="deathCheckbox2" checked>
