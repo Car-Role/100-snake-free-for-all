@@ -21,18 +21,19 @@ SCREEN_HEIGHT = 1080
 # Colors
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
-BG_COLOR = (50, 50, 50)
-SLIDER_TRACK_COLOR = (80, 80, 80)
-SLIDER_FILL_COLOR = (100, 100, 255)
-SLIDER_BORDER_COLOR = (255, 255, 255)
-SLIDER_HANDLE_COLOR = (255, 50, 50)
-SLIDER_TEXT_COLOR = (255, 255, 255)
-CHECKBOX_BORDER_COLOR = (255, 255, 255)
-CHECKBOX_FILL_COLOR = (100, 255, 100)
-CHECKBOX_BG_COLOR = (50, 50, 50)
-BUTTON_BG_COLOR = (70, 70, 70)
-BUTTON_BORDER_COLOR = (255, 255, 255)
-BUTTON_TEXT_COLOR = (255, 255, 255)
+BG_COLOR = (50, 50, 50)  # Original medium gray background
+SLIDER_TRACK_COLOR = (68, 71, 90)  # Slightly lighter than background
+SLIDER_FILL_COLOR = (98, 114, 164)  # Muted purple
+SLIDER_BORDER_COLOR = (189, 147, 249)  # Bright purple
+SLIDER_HANDLE_COLOR = (255, 121, 198)  # Pink
+SLIDER_TEXT_COLOR = (248, 248, 242)  # Almost white
+CHECKBOX_BORDER_COLOR = (189, 147, 249)  # Bright purple
+CHECKBOX_FILL_COLOR = (80, 250, 123)  # Bright green
+CHECKBOX_BG_COLOR = (50, 50, 50)  # Same as background
+BUTTON_BG_COLOR = (98, 114, 164)  # Muted purple
+BUTTON_BORDER_COLOR = (189, 147, 249)  # Bright purple
+BUTTON_TEXT_COLOR = (248, 248, 242)  # Almost white
+UI_PANEL_BG = (50, 50, 50, 200)  # Semi-transparent background matching original
 
 # Utility function for sign
 def sign(x):
@@ -45,7 +46,7 @@ class Slider:
         self.max_value = max_value
         self.value = initial_value
         self.label = label
-        self.handle_radius = 10
+        self.handle_radius = 8
         self.dragging = False
 
     def update_value(self, mouse_pos):
@@ -70,22 +71,33 @@ class Slider:
         return False
 
     def draw(self, surface, font):
-        # Draw slider track background
-        pygame.draw.rect(surface, SLIDER_TRACK_COLOR, self.rect)
+        # Draw background panel for the entire slider area
+        panel_rect = pygame.Rect(self.rect.x - 5, self.rect.y - 25, self.rect.width + 10, self.rect.height + 30)
+        panel_surface = pygame.Surface((panel_rect.width, panel_rect.height), pygame.SRCALPHA)
+        pygame.draw.rect(panel_surface, UI_PANEL_BG, panel_surface.get_rect(), border_radius=5)
+        surface.blit(panel_surface, panel_rect)
+
+        # Draw slider track with rounded corners
+        pygame.draw.rect(surface, SLIDER_TRACK_COLOR, self.rect, border_radius=5)
+        
         # Calculate filled percentage
         t = (self.value - self.min_value) / (self.max_value - self.min_value)
         filled_width = int(self.rect.width * t)
         filled_rect = pygame.Rect(self.rect.x, self.rect.y, filled_width, self.rect.height)
-        pygame.draw.rect(surface, SLIDER_FILL_COLOR, filled_rect)
-        # Draw border
-        pygame.draw.rect(surface, SLIDER_BORDER_COLOR, self.rect, 2)
-        # Draw handle at the end of filled portion
+        pygame.draw.rect(surface, SLIDER_FILL_COLOR, filled_rect, border_radius=5)
+        
+        # Draw border with rounded corners
+        pygame.draw.rect(surface, SLIDER_BORDER_COLOR, self.rect, 2, border_radius=5)
+        
+        # Draw handle
         handle_x = self.rect.x + filled_width
         handle_center = (handle_x, self.rect.y + self.rect.height // 2)
         pygame.draw.circle(surface, SLIDER_HANDLE_COLOR, handle_center, self.handle_radius)
+        pygame.draw.circle(surface, SLIDER_BORDER_COLOR, handle_center, self.handle_radius, 2)
+        
         # Draw label text above slider
         label_surf = font.render(f"{self.label}: {self.value:.1f}", True, SLIDER_TEXT_COLOR)
-        surface.blit(label_surf, (self.rect.x, self.rect.y - 25))
+        surface.blit(label_surf, (self.rect.x, self.rect.y - 20))
 
 class Checkbox:
     def __init__(self, pos, size, initial, label):
@@ -117,12 +129,15 @@ class Button:
     def __init__(self, pos, size, text):
         self.rect = pygame.Rect(pos[0], pos[1], size[0], size[1])
         self.text = text
+        self.hovered = False
 
     def draw(self, surface, font):
-        pygame.draw.rect(surface, BUTTON_BG_COLOR, self.rect)
-        pygame.draw.rect(surface, BUTTON_BORDER_COLOR, self.rect, 2)
+        # Draw button background with rounded corners
+        pygame.draw.rect(surface, BUTTON_BG_COLOR, self.rect, border_radius=10)
+        pygame.draw.rect(surface, BUTTON_BORDER_COLOR, self.rect, 2, border_radius=10)
+        
+        # Draw text centered on button
         text_surf = font.render(self.text, True, BUTTON_TEXT_COLOR)
-        # Center the text within the button
         text_rect = text_surf.get_rect(center=self.rect.center)
         surface.blit(text_surf, text_rect)
 
@@ -200,28 +215,59 @@ class Snake:
     def decide_direction(self, foods, snakes):
         if not foods:
             return
+
+        # Find nearest food
         nearest_food = min(foods, key=lambda f: self.position.distance_to(f.position))
         diff = nearest_food.position - self.position
+
+        # Determine preferred and alternate directions
         if abs(diff.x) > abs(diff.y):
             preferred = pygame.Vector2(sign(diff.x), 0)
-            alternate = pygame.Vector2(0, sign(diff.y)) if diff.y != 0 else None
+            alternate = pygame.Vector2(0, sign(diff.y)) if diff.y != 0 else pygame.Vector2(0, 1)
         else:
             preferred = pygame.Vector2(0, sign(diff.y))
-            alternate = pygame.Vector2(sign(diff.x), 0) if diff.x != 0 else None
+            alternate = pygame.Vector2(sign(diff.x), 0) if diff.x != 0 else pygame.Vector2(1, 0)
 
-        def is_safe(direction):
-            candidate = self.position + direction * GRID_SIZE
-            for other in snakes:
-                if other is not self and candidate in other.body:
-                    return False
-            return True
+        # Check if current direction is still valid
+        if self.is_safe(self.direction, snakes):
+            # Continue in current direction if it's taking us closer to food
+            current_dist = self.position.distance_to(nearest_food.position)
+            next_pos = self.position + self.direction * GRID_SIZE
+            next_dist = next_pos.distance_to(nearest_food.position)
+            if next_dist < current_dist:
+                return
 
-        if is_safe(preferred):
+        # Try preferred direction
+        if self.is_safe(preferred, snakes):
             self.direction = preferred
-        elif alternate and is_safe(alternate):
+        # Try alternate direction
+        elif self.is_safe(alternate, snakes):
             self.direction = alternate
+        # Try other directions if both preferred and alternate are blocked
         else:
-            self.direction = preferred
+            possible_dirs = [
+                pygame.Vector2(1, 0),
+                pygame.Vector2(-1, 0),
+                pygame.Vector2(0, 1),
+                pygame.Vector2(0, -1)
+            ]
+            safe_dirs = [d for d in possible_dirs if self.is_safe(d, snakes)]
+            if safe_dirs:
+                self.direction = random.choice(safe_dirs)
+
+    def is_safe(self, direction, snakes):
+        candidate = self.position + direction * GRID_SIZE
+        # Check if within bounds
+        if not (0 <= candidate.x < BOARD_WIDTH and 0 <= candidate.y < BOARD_HEIGHT):
+            return False
+        # Check collision with other snakes
+        for other in snakes:
+            if other is not self and other.alive and candidate in other.body:
+                return False
+        # Check self collision (except with tail which will move)
+        if candidate in self.body[:-1]:
+            return False
+        return True
 
     def handle_collision(self):
         self.stunned = True
@@ -248,17 +294,16 @@ class Game:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, 24)
 
-        # Menu UI elements with initial placeholder positions (will be centered later)
-        self.speed_slider = Slider((20, 20), 200, 20, 5, 500, DEFAULT_MOVE_INTERVAL, "Speed (ms)")
-        self.food_slider = Slider((20, 60), 200, 20, 5, 1000, float(DEFAULT_NUM_FOOD), "Food Spawn")
-        self.death_checkbox = Checkbox((20, 100), 20, True, "Snake Death")
-        self.num_snakes_slider = Slider((20, 140), 200, 20, 10, 500, 100, "Num Snakes")
-        self.start_button = Button((20, 200), (200, 40), "Start Game")
+        # Menu UI elements centered on screen
+        menu_x = SCREEN_WIDTH // 2 - 100
+        menu_y = SCREEN_HEIGHT // 2 - 150
+        self.speed_slider = Slider((menu_x, menu_y), 200, 20, 5, 500, DEFAULT_MOVE_INTERVAL, "Speed (ms)")
+        self.food_slider = Slider((menu_x, menu_y + 50), 200, 20, 5, 1000, float(DEFAULT_NUM_FOOD), "Food Spawn")
+        self.death_checkbox = Checkbox((menu_x, menu_y + 100), 20, True, "Snake Death")
+        self.num_snakes_slider = Slider((menu_x, menu_y + 150), 200, 20, 10, 500, 100, "Num Snakes")
+        self.start_button = Button((menu_x, menu_y + 200), (200, 40), "Start Game")
 
-        # Flag to ensure menu UI is centered once
-        self.menu_centered = False
-
-        # In-game settings UI (can be toggled)
+        # In-game settings UI (positioned in top-right corner)
         self.show_settings = True
         
         # Game state
@@ -305,9 +350,19 @@ class Game:
             if event.button == 1 and self.start_button.is_clicked(event.pos):
                 # Start game using settings from menu
                 num_snakes = int(self.num_snakes_slider.value)
+                num_food = int(self.food_slider.value)
+                
+                # Initialize game objects with current settings
                 self.snakes = [Snake() for _ in range(num_snakes)]
+                self.foods = [Food() for _ in range(num_food)]
+                
                 # Update snake death setting
                 Snake.death_enabled = self.death_checkbox.checked
+                
+                # Reset camera position and zoom
+                self.camera_position = pygame.Vector2(BOARD_WIDTH / 2, BOARD_HEIGHT / 2)
+                self.zoom = 1.0
+                
                 # Transition to game state
                 self.state = "game"
 
@@ -374,25 +429,6 @@ class Game:
 
     def draw_menu(self):
         self.screen.fill(BG_COLOR)
-        # Center the UI in the menu once
-        if not self.menu_centered:
-            panel_width = 200  # using slider/button widths
-            panel_height = 260 # total vertical space for the menu
-            new_x_slider = (SCREEN_WIDTH - panel_width) // 2
-            new_x_checkbox = (SCREEN_WIDTH - 20) // 2  # checkbox width is 20
-            start_y = (SCREEN_HEIGHT - panel_height) // 2
-            self.speed_slider.rect.x = new_x_slider
-            self.speed_slider.rect.y = start_y
-            self.food_slider.rect.x = new_x_slider
-            self.food_slider.rect.y = start_y + 40
-            self.death_checkbox.rect.x = new_x_checkbox
-            self.death_checkbox.rect.y = start_y + 80
-            self.num_snakes_slider.rect.x = new_x_slider
-            self.num_snakes_slider.rect.y = start_y + 120
-            self.start_button.rect.x = new_x_slider
-            self.start_button.rect.y = start_y + 180
-            self.menu_centered = True
-
         self.speed_slider.draw(self.screen, self.font)
         self.food_slider.draw(self.screen, self.font)
         self.death_checkbox.draw(self.screen, self.font)
@@ -406,17 +442,39 @@ class Game:
 
     def draw_game(self):
         self.screen.fill(BG_COLOR)
+        
+        # Draw all game objects
         for food in self.foods:
             food.draw(self.screen, self.camera_position, self.zoom)
         for snake in self.snakes:
             snake.draw(self.screen, self.camera_position, self.zoom)
+        
+        # Draw UI in top-right corner if enabled
         if self.show_settings:
-            # Draw settings UI in simulation (drawn at their original positions)
+            ui_x = SCREEN_WIDTH - 240  # Increased margin to prevent cutoff
+            ui_y = 40  # Increased margin from top
+            
+            # Draw semi-transparent background panel for UI
+            panel_rect = pygame.Rect(ui_x - 10, ui_y - 30, 230, 160)
+            panel_surface = pygame.Surface((panel_rect.width, panel_rect.height), pygame.SRCALPHA)
+            pygame.draw.rect(panel_surface, UI_PANEL_BG, panel_surface.get_rect(), border_radius=10)
+            self.screen.blit(panel_surface, panel_rect)
+            
+            # Position and draw UI elements
+            self.speed_slider.rect.topleft = (ui_x, ui_y)
+            self.food_slider.rect.topleft = (ui_x, ui_y + 50)
+            self.death_checkbox.rect.topleft = (ui_x, ui_y + 100)
+            
             self.speed_slider.draw(self.screen, self.font)
             self.food_slider.draw(self.screen, self.font)
             self.death_checkbox.draw(self.screen, self.font)
-            instruct = self.font.render("Press H to hide settings", True, SLIDER_TEXT_COLOR)
-            self.screen.blit(instruct, (20, 260))
+            
+            # Draw hide instruction with background
+            hide_text = "Press H to hide settings"
+            text_surf = self.font.render(hide_text, True, SLIDER_TEXT_COLOR)
+            text_rect = text_surf.get_rect(bottomright=(SCREEN_WIDTH - 10, panel_rect.bottom + 25))
+            self.screen.blit(text_surf, text_rect)
+            
         pygame.display.flip()
 
 if __name__ == '__main__':
