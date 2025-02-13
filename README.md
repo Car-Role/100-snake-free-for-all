@@ -20,4 +20,4 @@ A multiplayer snake game where AI-controlled snakes compete for food in a large 
 5. Press 'H' to toggle settings visibility
 
 ## Play Online
-Visit [https://YOUR_USERNAME.github.io/100-snake-free-for-all](https://YOUR_USERNAME.github.io/100-snake-free-for-all) to play the game!
+Visit [https://car-role.github.io/100-snake-free-for-all](https://car-role.github.io/100-snake-free-for-all) to play the game!
